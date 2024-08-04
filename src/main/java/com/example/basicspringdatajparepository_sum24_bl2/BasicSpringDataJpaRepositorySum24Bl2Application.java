@@ -8,6 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.List;
 
 @SpringBootApplication
 public class BasicSpringDataJpaRepositorySum24Bl2Application implements CommandLineRunner {
@@ -55,5 +61,58 @@ public class BasicSpringDataJpaRepositorySum24Bl2Application implements CommandL
         //4.
         productRepository.findByNameV5("Product 1")
                 .forEach(p -> logger.info(p.getName()));
+
+        // 5. Pagination
+        int pageNo = 0; // trang 0, 1, ...
+        int pageSize = 2; // so phan tu cua trang
+
+        // creating pageable obj
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+        // get all info via Page
+        Page<Product> page = productRepository.findAll(pageable);
+        List<Product> products = page.getContent();
+        products.forEach(p -> logger.info(p.toString()));
+
+        //total pages
+        int totalPages = page.getTotalPages();
+        logger.info("Total Pages: " + totalPages);
+
+        // total elements
+        long totalElements = page.getTotalElements();
+        logger.info("Number of elements: " + totalElements);
+
+        // size
+        int size = page.getSize();
+        logger.info("Size of elements: " + size);
+
+        // last, fisrt
+        boolean isLast = page.isLast();
+        boolean isFirst = page.isFirst();
+
+        logger.info("Is last page: " + isLast);
+        logger.info("Is first page: " + isFirst);
+
+        // 6. Sorting (sap xep)
+        String sortBy = "name";
+        String sortDir = "desc"; // default = "asc"
+
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy)
+                : Sort.by(sortBy).descending();
+
+        List<Product> products1 = productRepository.findAll(sort);
+        products1.forEach(p -> logger.info(p.toString()));
+
+        // sorting with multiple fields
+        //Sort.by("name").and(Sort.by("price").descending());
+
+        //7. Pagination + Sorting
+        Page<Product> products2 = productRepository
+                .findAll(PageRequest.of(pageNo, pageSize, sort));
+        products2.forEach(p -> logger.info(p.toString()));
+
+
     }
 }
+
